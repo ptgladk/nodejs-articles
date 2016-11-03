@@ -19,15 +19,23 @@ html
                         li
                             a(href='/') Home
                     ul.nav.navbar-nav.navbar-right
-                        li
-                            a(href='/registration') Registration 
-                        li
-                            a(href='/login') Login
+                        if (!user)
+                            li
+                                a(href='/registration') Registration 
+                            li
+                                a(href='/login') Login
+                        else
+                            li
+                                a(href='/logout') Logout
         .container
-            - if (success.length)
+            if (success.length)
                 .row
                     .col-lg-12.col-md-12.col-sm-12.col-xs-12
                             .alert.alert-success=success
+            if (error.length)
+                .row
+                    .col-lg-12.col-md-12.col-sm-12.col-xs-12
+                            .alert.alert-danger=error
             .row
                 .col-lg-12.col-md-12.col-sm-12.col-xs-12
                     block content

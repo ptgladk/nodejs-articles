@@ -7,6 +7,7 @@ var mongoose = require('mongoose');
 var session = require('express-session');
 var expressValidator = require('express-validator');
 var flash = require('connect-flash');
+var passport = require('passport');
 
 var config = require('./config');
 
@@ -35,6 +36,10 @@ app.use(session({
     saveUninitialized: true
 }));
 
+// Passport
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Express validator
 app.use(expressValidator({
     errorFormatter: function(param, msg, value) {
@@ -59,6 +64,8 @@ app.use(flash());
 // Global variables
 app.use(function(req, res, next) {
     res.locals.success = req.flash('success');
+    res.locals.error = req.flash('error');
+    res.locals.user = req.user;
     next();
 });
 
