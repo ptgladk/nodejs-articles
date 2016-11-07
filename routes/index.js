@@ -5,6 +5,7 @@ var LocalStrategy = require('passport-local').Strategy;
 var FacebookStrategy = require('passport-facebook').Strategy;
 var User = require('../models/user');
 var config = require('../config');
+var Security = require('../lib/security');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -12,12 +13,12 @@ router.get('/', function(req, res, next) {
 });
 
 // Registration form
-router.get('/registration', function(req, res) {
+router.get('/registration', Security.alreadyAuthenticated, function(req, res) {
     res.render('registration', { title: 'Registration' });
 });
 
 // Registration
-router.post('/registration', function(req, res) {
+router.post('/registration', Security.alreadyAuthenticated, function(req, res) {
     req.checkBody('username', 'Username is required').notEmpty();
     req.checkBody('email', 'Email is required').notEmpty();
     req.checkBody('email', 'Email is not valid').isEmail();
@@ -48,7 +49,7 @@ router.post('/registration', function(req, res) {
 });
 
 // Login form
-router.get('/login', function(req, res) {
+router.get('/login', Security.alreadyAuthenticated, function(req, res) {
     res.render('login', { title: 'Login' });
 });
 
@@ -83,6 +84,7 @@ passport.deserializeUser(function(id, done) {
 // Login
 router.post(
     '/login',
+    Security.alreadyAuthenticated,
     passport.authenticate('local', {
             successRedirect: '/',
             successFlash: 'You are successfully logged in',
@@ -96,7 +98,7 @@ router.post(
 );
 
 // Logout
-router.get('/logout', function(req, res) {
+router.get('/logout', Security.isAuthenticated, function(req, res) {
     req.logout();
     req.flash('success', 'You are logged out');
     res.redirect('/');
@@ -136,9 +138,14 @@ passport.use(new FacebookStrategy({
     }
 ));
 
-router.get('/auth/facebook', passport.authenticate('facebook', {scope: 'email'}));
+router.get(
+    '/auth/facebook',
+    Security.alreadyAuthenticated,
+    passport.authenticate('facebook', {scope: 'email'})
+);
 
 router.get('/auth/facebook/callback',
+    Security.alreadyAuthenticated,
     passport.authenticate('facebook', {
         successRedirect: '/',
         failureRedirect: '/login'

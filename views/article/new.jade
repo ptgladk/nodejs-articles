@@ -1,0 +1,17 @@
+extends ../layout
+
+block content
+    if (errors)
+        each error in errors
+            .alert.alert-danger=error.msg
+    form(method='post', action='/article/new')
+        .form-group
+            label Title
+            input.form-control(type='text', name='title')
+        .form-group
+            label Description
+            input.form-control(type='text', name='description')
+        .form-group
+            label Content
+            textarea.form-control(name='content', rows='5')
+        button.btn.btn-success(type='submit') Save

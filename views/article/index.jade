@@ -1,0 +1,25 @@
+extends ../layout
+
+block content
+    a.btn.btn-success.new-link(href='/article/new') Add article
+    hr
+    if (articles.length)
+        table.table.table-bordered
+            thead
+                tr
+                    th Title
+                    th Show
+                    th Edit
+                    th Delete
+            tbody
+                each article in articles
+                    tr
+                        td=article.title
+                        td
+                            a.btn.btn-info(href='/article/show/#{article._id}') Show
+                        td
+                            a.btn.btn-info(href='/article/edit/#{article._id}') Edit
+                        td
+                            form.delete-form(method='post', action='/article/delete')
+                                input(type='hidden' name='id' value='#{article._id}')
+                                button.btn.btn-danger(type='submit') Delete
