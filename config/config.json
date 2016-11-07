@@ -1,4 +1,9 @@
 {
     "port": 3000,
-    "database": "mongodb://localhost/articles"
+    "database": "mongodb://localhost/articles",
+    "facebook": {
+        "id": "",
+        "key": "",
+        "callback": "http://localhost:3000/auth/facebook/callback"
+    }
 }

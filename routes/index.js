@@ -2,7 +2,9 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+var FacebookStrategy = require('passport-facebook').Strategy;
 var User = require('../models/user');
+var config = require('../config');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -52,13 +54,13 @@ router.get('/login', function(req, res) {
 
 // Local strategy
 passport.use(new LocalStrategy(
-    function(username, password, done) {
-        User.findOne({ username: username }, function(err, user) {
+    function(email, password, done) {
+        User.findOne({ email: email }, function(err, user) {
             if (err) {
                 return done(err);
             }
             if (!user) {
-                return done(null, false, { message: 'Incorrect username' });
+                return done(null, false, { message: 'Incorrect email' });
             }
             if (!user.checkPassword(password)) {
                 return done(null, false, { message: 'Incorrect password' });
@@ -94,10 +96,53 @@ router.post(
 );
 
 // Logout
-router.get('/logout', function(req, res){
+router.get('/logout', function(req, res) {
     req.logout();
     req.flash('success', 'You are logged out');
     res.redirect('/');
 });
+
+// Login facebook
+passport.use(new FacebookStrategy({
+        clientID: config.get('facebook:id'),
+        clientSecret: config.get('facebook:key'),
+        callbackURL: config.get('facebook:callback'),
+        profileFields: ['id', 'emails', 'first_name', 'last_name']
+    },
+    function(accessToken, refreshToken, profile, done) {
+        User.findOne({'facebook.id': profile.id}, function(err, user) {
+            if (err) {
+                return done(err);
+            }
+            if (user) {
+                return done(null, user);
+            } else {
+                var newUser = new User({
+                    username: profile.name.givenName + ' ' + profile.name.familyName,
+                    email: profile.emails[0].value,
+                    facebook: {
+                        id: profile.id,
+                        token: accessToken
+                    }
+                });
+                newUser.save(function(err) {
+                    if (err) {
+                        throw err;
+                    }
+                    return done(null, newUser);
+                })
+            }
+        });
+    }
+));
+
+router.get('/auth/facebook', passport.authenticate('facebook', {scope: 'email'}));
+
+router.get('/auth/facebook/callback',
+    passport.authenticate('facebook', {
+        successRedirect: '/',
+        failureRedirect: '/login'
+    })
+);
 
 module.exports = router;
