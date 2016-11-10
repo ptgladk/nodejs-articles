@@ -13,6 +13,8 @@ var UserSchema = new mongoose.Schema({
     },
     password: String,
     salt: String,
+    token: String,
+    tokenCreated: Date,
     created: {
         type: Date,
         default: Date.now
